@@ -64,8 +64,8 @@ set(NMOS_IS04_SCHEMAS_HEADERS
     )
 
 set(NMOS_IS04_V1_3_TAG v1.3-dev)
-set(NMOS_IS04_V1_2_TAG v1.2.1)
-set(NMOS_IS04_V1_1_TAG v1.1.2)
+set(NMOS_IS04_V1_2_TAG v1.2.2)
+set(NMOS_IS04_V1_1_TAG v1.1.3)
 set(NMOS_IS04_V1_0_TAG v1.0.3)
 
 set(NMOS_IS04_V1_3_SCHEMAS_JSON
@@ -81,6 +81,7 @@ set(NMOS_IS04_V1_3_SCHEMAS_JSON
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_audio_raw.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_core.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_data.json
+    ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_json_data.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_mux.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_sdianc_data.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/flow_video.json
@@ -113,6 +114,7 @@ set(NMOS_IS04_V1_3_SCHEMAS_JSON
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/sources.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/source_audio.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/source_core.json
+    ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/source_data.json
     ${NMOS_CPP_DIR}/third_party/nmos-discovery-registration/${NMOS_IS04_V1_3_TAG}/APIs/schemas/source_generic.json
     )
 
@@ -304,7 +306,7 @@ set(NMOS_IS05_SCHEMAS_HEADERS
     )
 
 set(NMOS_IS05_V1_1_TAG v1.1-dev)
-set(NMOS_IS05_V1_0_TAG v1.0.1)
+set(NMOS_IS05_V1_0_TAG v1.0.2)
 
 set(NMOS_IS05_V1_1_SCHEMAS_JSON
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/activation-response-schema.json
@@ -330,17 +332,24 @@ set(NMOS_IS05_V1_1_SCHEMAS_JSON
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/receiver_transport_params_websocket.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/receiver-response-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/receiver-stage-schema.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/receiver-transport-file.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender_transport_params_dash.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender_transport_params_ext.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender_transport_params_mqtt.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender_transport_params_rtp.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender_transport_params_websocket.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender-receiver-base.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender-response-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/sender-stage-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_1_TAG}/APIs/schemas/transporttype-response-schema.json
     )
 
 set(NMOS_IS05_V1_0_SCHEMAS_JSON
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/connectionapi-base.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/connectionapi-bulk.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/connectionapi-receiver.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/connectionapi-sender.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/connectionapi-single.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/error.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0_receiver_transport_params_dash.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0_receiver_transport_params_rtp.json
@@ -354,6 +363,7 @@ set(NMOS_IS05_V1_0_SCHEMAS_JSON
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0-constraints-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0-receiver-response-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0-receiver-stage-schema.json
+    ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/sender-receiver-base.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0-sender-response-schema.json
     ${NMOS_CPP_DIR}/third_party/nmos-device-connection-management/${NMOS_IS05_V1_0_TAG}/APIs/schemas/v1.0-sender-stage-schema.json
     )
@@ -514,8 +524,11 @@ set(NMOS_CPP_CPPREST_SOURCES
     ${NMOS_CPP_DIR}/cpprest/api_router.cpp
     ${NMOS_CPP_DIR}/cpprest/host_utils.cpp
     ${NMOS_CPP_DIR}/cpprest/http_utils.cpp
+    ${NMOS_CPP_DIR}/cpprest/json_escape.cpp
+    ${NMOS_CPP_DIR}/cpprest/json_storage.cpp
     ${NMOS_CPP_DIR}/cpprest/json_utils.cpp
     ${NMOS_CPP_DIR}/cpprest/json_validator_impl.cpp
+    ${NMOS_CPP_DIR}/cpprest/json_visit.cpp
     ${NMOS_CPP_DIR}/cpprest/ws_listener_impl.cpp
     )
 
@@ -529,8 +542,12 @@ set(NMOS_CPP_CPPREST_HEADERS
     ${NMOS_CPP_DIR}/cpprest/basic_utils.h
     ${NMOS_CPP_DIR}/cpprest/host_utils.h
     ${NMOS_CPP_DIR}/cpprest/http_utils.h
+    ${NMOS_CPP_DIR}/cpprest/json_escape.h
+    ${NMOS_CPP_DIR}/cpprest/json_ops.h
+    ${NMOS_CPP_DIR}/cpprest/json_storage.h
     ${NMOS_CPP_DIR}/cpprest/json_utils.h
     ${NMOS_CPP_DIR}/cpprest/json_validator.h
+    ${NMOS_CPP_DIR}/cpprest/json_visit.h
     ${NMOS_CPP_DIR}/cpprest/logging_utils.h
     ${NMOS_CPP_DIR}/cpprest/regex_utils.h
     ${NMOS_CPP_DIR}/cpprest/uri_schemes.h
@@ -542,6 +559,7 @@ set(NMOS_CPP_CPPREST_DETAILS_HEADERS
     ${NMOS_CPP_DIR}/cpprest/details/boost_u_workaround.h
     ${NMOS_CPP_DIR}/cpprest/details/pop_u.h
     ${NMOS_CPP_DIR}/cpprest/details/push_undef_u.h
+    ${NMOS_CPP_DIR}/cpprest/details/system_error.h
     )
 
 set(NMOS_CPP_NMOS_SOURCES
@@ -550,6 +568,7 @@ set(NMOS_CPP_NMOS_SOURCES
     ${NMOS_CPP_DIR}/nmos/api_utils.cpp
     ${NMOS_CPP_DIR}/nmos/client_utils.cpp
     ${NMOS_CPP_DIR}/nmos/components.cpp
+    ${NMOS_CPP_DIR}/nmos/connection_activation.cpp
     ${NMOS_CPP_DIR}/nmos/connection_api.cpp
     ${NMOS_CPP_DIR}/nmos/connection_resources.cpp
     ${NMOS_CPP_DIR}/nmos/events_api.cpp
@@ -568,12 +587,14 @@ set(NMOS_CPP_NMOS_SOURCES
     ${NMOS_CPP_DIR}/nmos/node_behaviour.cpp
     ${NMOS_CPP_DIR}/nmos/node_resource.cpp
     ${NMOS_CPP_DIR}/nmos/node_resources.cpp
+    ${NMOS_CPP_DIR}/nmos/node_server.cpp
     ${NMOS_CPP_DIR}/nmos/process_utils.cpp
     ${NMOS_CPP_DIR}/nmos/query_api.cpp
     ${NMOS_CPP_DIR}/nmos/query_utils.cpp
     ${NMOS_CPP_DIR}/nmos/query_ws_api.cpp
     ${NMOS_CPP_DIR}/nmos/registration_api.cpp
     ${NMOS_CPP_DIR}/nmos/registry_resources.cpp
+    ${NMOS_CPP_DIR}/nmos/registry_server.cpp
     ${NMOS_CPP_DIR}/nmos/resource.cpp
     ${NMOS_CPP_DIR}/nmos/resources.cpp
     ${NMOS_CPP_DIR}/nmos/sdp_utils.cpp
@@ -594,6 +615,7 @@ set(NMOS_CPP_NMOS_HEADERS
     ${NMOS_CPP_DIR}/nmos/colorspace.h
     ${NMOS_CPP_DIR}/nmos/components.h
     ${NMOS_CPP_DIR}/nmos/copyable_atomic.h
+    ${NMOS_CPP_DIR}/nmos/connection_activation.h
     ${NMOS_CPP_DIR}/nmos/connection_api.h
     ${NMOS_CPP_DIR}/nmos/connection_resources.h
     ${NMOS_CPP_DIR}/nmos/device_type.h
@@ -627,6 +649,7 @@ set(NMOS_CPP_NMOS_HEADERS
     ${NMOS_CPP_DIR}/nmos/node_behaviour.h
     ${NMOS_CPP_DIR}/nmos/node_resource.h
     ${NMOS_CPP_DIR}/nmos/node_resources.h
+    ${NMOS_CPP_DIR}/nmos/node_server.h
     ${NMOS_CPP_DIR}/nmos/paging_utils.h
     ${NMOS_CPP_DIR}/nmos/process_utils.h
     ${NMOS_CPP_DIR}/nmos/query_api.h
@@ -636,9 +659,11 @@ set(NMOS_CPP_NMOS_HEADERS
     ${NMOS_CPP_DIR}/nmos/rational.h
     ${NMOS_CPP_DIR}/nmos/registration_api.h
     ${NMOS_CPP_DIR}/nmos/registry_resources.h
+    ${NMOS_CPP_DIR}/nmos/registry_server.h
     ${NMOS_CPP_DIR}/nmos/resource.h
     ${NMOS_CPP_DIR}/nmos/resources.h
     ${NMOS_CPP_DIR}/nmos/sdp_utils.h
+    ${NMOS_CPP_DIR}/nmos/server.h
     ${NMOS_CPP_DIR}/nmos/server_utils.h
     ${NMOS_CPP_DIR}/nmos/settings.h
     ${NMOS_CPP_DIR}/nmos/settings_api.h

@@ -1,8 +1,12 @@
 #include "nmos/api_utils.h"
 
+#include <boost/algorithm/cxx11/any_of.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include "cpprest/json_visit.h"
 #include "cpprest/uri_schemes.h"
+#include "cpprest/ws_utils.h"
 #include "nmos/api_version.h"
 #include "nmos/slog.h"
 #include "nmos/type.h"
@@ -47,10 +51,7 @@ namespace nmos
         template <typename HttpMessage>
         inline pplx::task<web::json::value> extract_json(const HttpMessage& msg, slog::base_gate& gate)
         {
-            auto content_type = msg.headers().content_type();
-            auto semicolon = content_type.find(U(';'));
-            if (utility::string_t::npos != semicolon) content_type.erase(semicolon);
-            boost::algorithm::trim(content_type);
+            auto content_type = web::http::details::get_mime_type(msg.headers().content_type());
 
             if (web::http::details::mime_types::application_json == content_type)
             {
@@ -172,24 +173,72 @@ namespace nmos
         return resourceTypes_from_type.at(type);
     }
 
+    // experimental extension, to support human-readable HTML rendering of NMOS responses
+    namespace experimental
+    {
+        namespace details
+        {
+            bool is_html_response_preferred(const web::http::http_request& req, const utility::string_t& mime_type)
+            {
+                // hmm, parsing of the Accept header could be much better and should take account of quality values
+                const auto accept = req.headers().find(web::http::header_names::accept);
+                return req.headers().end() != accept
+                    && !boost::algorithm::contains(accept->second, mime_type)
+                    && boost::algorithm::contains(accept->second, U("text/html"));
+            }
+
+            web::json::value make_html_response_a_tag(const web::uri& href, const web::json::value& value)
+            {
+                using web::json::value_of;
+
+                return value_of({
+                    { U("$href"), href.to_string() },
+                    { U("$_"), value }
+                });
+            }
+
+            web::json::value make_html_response_a_tag(const utility::string_t& sub_route, const web::http::http_request& req)
+            {
+                using web::json::value;
+                return make_html_response_a_tag(web::uri_builder(req.request_uri()).append_path(sub_route).to_uri(), value::string(sub_route));
+            }
+        }
+    }
+
     // construct a standard NMOS "child resources" response, from the specified sub-routes
     // merging with ones from an existing response
     // see https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/docs/2.0.%20APIs.md#api-paths
-    web::json::value make_sub_routes_body(std::set<utility::string_t> sub_routes, web::http::http_response res)
+    web::json::value make_sub_routes_body(std::set<utility::string_t> sub_routes, const web::http::http_request& req, web::http::http_response res)
     {
         using namespace web::http::experimental::listener::api_router_using_declarations;
+
+        std::set<value> results;
 
         if (res.body())
         {
             auto body = res.extract_json().get();
+            results.insert(body.as_array().begin(), body.as_array().end());
+        }
 
-            for (auto& element : body.as_array())
+        // experimental extension, to support human-readable HTML rendering of NMOS responses
+        if (experimental::details::is_html_response_preferred(req, web::http::details::mime_types::application_json))
+        {
+            for (auto& sub_route : sub_routes)
             {
-                sub_routes.insert(element.as_string());
+                // build a full path, using use request_uri, rather than just the simple relative href
+                // in order to make working links when the current request didn't have a trailing slash
+                results.insert(experimental::details::make_html_response_a_tag(sub_route, req));
+            }
+        }
+        else
+        {
+            for (auto& sub_route : sub_routes)
+            {
+                results.insert(value::string(sub_route));
             }
         }
 
-        return web::json::value_from_elements(sub_routes);
+        return web::json::value_from_elements(results);
     }
 
     // construct sub-routes for the specified API versions
@@ -206,6 +255,179 @@ namespace nmos
             { U("error"), !error.empty() ? error : web::http::get_default_reason_phrase(code) },
             { U("debug"), !debug.empty() ? web::json::value::string(debug) : web::json::value::null() }
         }, true);
+    }
+
+    // experimental extension, to support human-readable HTML rendering of NMOS responses
+    namespace experimental
+    {
+        const char* headers_stylesheet = R"-stylesheet-(
+.headers
+{
+  font-family: monospace;
+  color: grey;
+  border-bottom: 1px solid lightgrey
+}
+.headers ol
+{
+  list-style: none;
+  padding: 0
+}
+)-stylesheet-";
+
+        // objects with the keywords $href and $_ are rendered as HTML anchor (a) tags
+        // in order that the elements in NMOS "child resources" responses can be made into links
+        // and id values in resources can also be made into links to the appropriate resource
+        template <typename CharType>
+        struct basic_html_visitor : web::json::experimental::basic_html_visitor<CharType>
+        {
+            typedef web::json::experimental::basic_html_visitor<CharType> base;
+            typedef typename base::char_type char_type;
+            typedef typename base::literals literals;
+            typedef typename base::html_entities html_entities;
+
+            basic_html_visitor(std::basic_ostream<char_type>& os)
+                : base(os)
+            {}
+
+            // visit callbacks
+            using base::operator();
+            void operator()(const web::json::value& value, web::json::string_tag tag)
+            {
+                const bool href = !name && is_href(value.as_string());
+                const auto str = escape(escape_characters(value.as_string()));
+                start_span(name ? "name" : "string");
+                os << html_entities::quot;
+                if (href) start_a(str);
+                os << str;
+                if (href) end_a();
+                os << html_entities::quot;
+                end_span();
+            }
+            void operator()(const web::json::value& value, web::json::object_tag)
+            {
+                if (value.has_field(U("$href")) && value.has_field(U("$_")))
+                {
+                    const auto href = escape(escape_characters(value.at(U("$href")).as_string()));
+
+                    const auto& v = value.at(U("$_"));
+                    if (v.is_string())
+                    {
+                        // cute rendering of simple string links with the surrounding quotes outside the link
+                        start_span("string");
+                        os << html_entities::quot;
+                        start_a(href);
+                        // hmm, special handling for empty strings?
+                        os << escape(escape_characters(v.as_string()));
+                        end_a();
+                        os << html_entities::quot;
+                        end_span();
+                    }
+                    else
+                    {
+                        // for other value types, the whole value is rendered inside the link
+                        start_a(href);
+                        web::json::visit(*this, v);
+                        end_a();
+                    }
+                }
+                else
+                {
+                    web::json::visit_object(*this, value);
+                }
+            }
+            void operator()(const web::json::value& value, web::json::array_tag)
+            {
+                web::json::visit_array(*this, value);
+            }
+
+            static bool is_href(const utility::string_t& str)
+            {
+                static const auto schemes = { U("http://"), U("https://"), U("ws://"), U("wss://") };
+                return boost::algorithm::any_of(schemes, [&str](const utility::string_t& scheme)
+                {
+                    return boost::algorithm::istarts_with(str, scheme);
+                });
+            }
+
+            using base::escape_characters;
+            using base::escape;
+
+        protected:
+            using base::os;
+            using base::name;
+
+            using base::start_span;
+            using base::end_span;
+            void start_a(const std::basic_string<char_type>& href) { this->os << "<a href=\"" << href << "\">"; }
+            void end_a() { this->os << "</a>"; }
+        };
+
+        // construct an HTML rendering of an NMOS response
+        std::string make_html_response_body(const web::http::http_response& res)
+        {
+            typedef basic_html_visitor<char> html_visitor;
+
+            std::ostringstream html;
+            html << "<html><head><style>" << headers_stylesheet << web::json::experimental::html_stylesheet << "</style></head><body>";
+            html << "<div class=\"headers\"><ol>";
+            for (const auto& header : res.headers())
+            {
+                html << "<li>";
+                html << "<span class=\"name\">";
+                html << html_visitor::escape(utility::us2s(header.first));
+                html << "</span>";
+                html << ": ";
+                html << "<span class=\"value\">";
+                if (header.first == web::http::header_names::location)
+                {
+                    const auto html_value = html_visitor::escape(utility::us2s(header.second));
+                    html << "<a href=\"" << html_value << "\">" << html_value << "</a>";
+                }
+                else if (header.first == U("Link"))
+                {
+                    // this regex pattern matches the usual whitespace precisely, but that's good enough
+                    static const utility::regex_t link(U(R"-regex-(<([^>]*)>; rel="([^"]*)"(, )?)-regex-"));
+                    auto first = header.second.begin();
+                    utility::smatch_t match;
+                    while (first != header.second.end())
+                    {
+                        if (bst::regex_search(first, header.second.end(), match, link, bst::regex_constants::match_continuous))
+                        {
+                            const auto html_link = html_visitor::escape(utility::us2s(match[1].str()));
+                            const auto html_rel = html_visitor::escape(utility::us2s(match[2].str()));
+                            const auto html_comma = html_visitor::escape(utility::us2s(match[3].str()));
+
+                            html << html_visitor::html_entities::lt;
+                            html << "<a href=\"" << html_link << "\">" << html_link << "</a>";
+                            html << html_visitor::html_entities::gt;
+                            html << "; ";
+                            html << "rel=" << html_visitor::html_entities::quot << html_rel << html_visitor::html_entities::quot;
+                            html << html_comma;
+
+                            first = match[0].second;
+                        }
+                        else
+                        {
+                            // match failed, so just output the remainder of the value
+                            html << html_visitor::escape(utility::us2s({ first, header.second.end() }));
+                            first = header.second.end();
+                        }
+                    }
+                }
+                else
+                {
+                    html << html_visitor::escape(utility::us2s(header.second));
+                }
+                html << "</span>";
+                html << "</li>";
+            }
+            html << "</ol></div><br/>";
+            html << "<div class=\"json\">";
+            web::json::visit(html_visitor(html), res.extract_json().get());
+            html << "</div>";
+            html << "</body></html>";
+            return html.str();
+        }
     }
 
     namespace details
@@ -308,6 +530,15 @@ namespace nmos
 
                 nmos::details::add_cors_headers(res);
 
+                // experimental extension, to support human-readable HTML rendering of NMOS responses
+
+                const auto mime_type = web::http::details::get_mime_type(res.headers().content_type());
+                if (web::http::details::mime_types::application_json == mime_type && experimental::details::is_html_response_preferred(req, mime_type))
+                {
+                    res.set_body(nmos::experimental::make_html_response_body(res));
+                    res.headers().set_content_type(U("text/html; charset=utf-8"));
+                }
+
                 slog::detail::logw<slog::log_statement, slog::base_gate>(gate, slog::severities::more_info, SLOG_FLF) << nmos::stash_categories({ nmos::categories::access }) << nmos::common_log_stash(req, res) << "Sending response";
 
                 req.reply(res);
@@ -407,12 +638,26 @@ namespace nmos
         });
     }
 
-    // construct an http_listener on the specified port, using the specified API to handle all requests
+    // construct an http_listener on the specified address and port, modifying the specified API to handle all requests
+    // (including CORS preflight requests via "OPTIONS") - captures api by reference!
     web::http::experimental::listener::http_listener make_api_listener(bool secure, const utility::string_t& host_address, int port, web::http::experimental::listener::api_router& api, web::http::experimental::listener::http_listener_config config, slog::base_gate& gate)
     {
         web::http::experimental::listener::http_listener api_listener(web::http::experimental::listener::make_listener_uri(secure, host_address, port), std::move(config));
         nmos::support_api(api_listener, api, gate);
         return api_listener;
+    }
+
+    // construct a websocket_listener on the specified address and port - captures handlers by reference!
+    web::websockets::experimental::listener::websocket_listener make_ws_api_listener(bool secure, const utility::string_t& host_address, int port, const web::websockets::experimental::listener::websocket_listener_handlers& handlers, web::websockets::experimental::listener::websocket_listener_config config, slog::base_gate& gate)
+    {
+        web::websockets::experimental::listener::websocket_listener ws_listener(web::websockets::experimental::listener::make_listener_uri(secure, host_address, port), std::move(config));
+        ws_listener.set_handlers({
+            std::ref(handlers.validate_handler),
+            std::ref(handlers.open_handler),
+            std::ref(handlers.close_handler),
+            std::ref(handlers.message_handler)
+        });
+        return ws_listener;
     }
 
     // returns "http" or "https" depending on settings
@@ -425,6 +670,18 @@ namespace nmos
     utility::string_t ws_scheme(const nmos::settings& settings)
     {
         return web::ws_scheme(nmos::experimental::fields::client_secure(settings));
+    }
+
+    // returns "mqtt" or "secure-mqtt"
+    utility::string_t mqtt_scheme(bool secure)
+    {
+        return secure ? U("secure-mqtt") : U("mqtt");
+    }
+
+    // returns "mqtt" or "secure-mqtt" depending on settings
+    utility::string_t mqtt_scheme(const nmos::settings& settings)
+    {
+        return mqtt_scheme(nmos::experimental::fields::client_secure(settings));
     }
 }
 

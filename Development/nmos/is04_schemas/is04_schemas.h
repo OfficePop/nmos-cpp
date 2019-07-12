@@ -20,6 +20,7 @@ namespace nmos
             extern const char* flow_audio_raw;
             extern const char* flow_audio_coded;
             extern const char* flow_data;
+            extern const char* flow_json_data;
             extern const char* flow_sdianc_data;
             extern const char* flow_mux;
             extern const char* flow_audio;
@@ -37,11 +38,12 @@ namespace nmos
             extern const char* source_generic;
             extern const char* source_audio;
             extern const char* source_core;
+            extern const char* source_data;
             extern const char* queryapi_subscriptions_post_request;
             extern const char* nodeapi_receiver_target;
         }
 
-        namespace v1_2_1
+        namespace v1_2_2
         {
             extern const char* registrationapi_resource_post_request;
             extern const char* clock_internal;
@@ -75,7 +77,7 @@ namespace nmos
             extern const char* nodeapi_receiver_target;
         }
 
-        namespace v1_1_2
+        namespace v1_1_3
         {
             extern const char* registrationapi_resource_post_request;
             extern const char* clock_internal;

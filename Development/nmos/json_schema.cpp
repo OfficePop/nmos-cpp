@@ -31,8 +31,8 @@ namespace nmos
         // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2.x/APIs/schemas/
         namespace v1_2
         {
-            using namespace nmos::is04_schemas::v1_2_1;
-            const utility::string_t tag(_XPLATSTR("v1.2.1"));
+            using namespace nmos::is04_schemas::v1_2_2;
+            const utility::string_t tag(_XPLATSTR("v1.2.2"));
 
             const web::uri registrationapi_resource_post_request_uri = make_schema_uri(tag, _XPLATSTR("registrationapi-resource-post-request.json"));
             const web::uri queryapi_subscriptions_post_request_uri = make_schema_uri(tag, _XPLATSTR("queryapi-subscriptions-post-request.json"));
@@ -42,8 +42,8 @@ namespace nmos
         // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.1.x/APIs/schemas/
         namespace v1_1
         {
-            using namespace nmos::is04_schemas::v1_1_2;
-            const utility::string_t tag(_XPLATSTR("v1.1.2"));
+            using namespace nmos::is04_schemas::v1_1_3;
+            const utility::string_t tag(_XPLATSTR("v1.1.3"));
 
             const web::uri registrationapi_resource_post_request_uri = make_schema_uri(tag, _XPLATSTR("registrationapi-resource-post-request.json"));
             const web::uri queryapi_subscriptions_post_request_uri = make_schema_uri(tag, _XPLATSTR("queryapi-subscriptions-post-request.json"));
@@ -82,8 +82,8 @@ namespace nmos
         // See https://github.com/AMWA-TV/nmos-device-connection-management/blob/v1.0.x/APIs/schemas/
         namespace v1_0
         {
-            using namespace nmos::is05_schemas::v1_0_1;
-            const utility::string_t tag(_XPLATSTR("v1.0.1"));
+            using namespace nmos::is05_schemas::v1_0_2;
+            const utility::string_t tag(_XPLATSTR("v1.0.2"));
 
             const web::uri connectionapi_sender_staged_patch_request_uri = make_schema_uri(tag, _XPLATSTR("v1.0-sender-stage-schema.json"));
             const web::uri connectionapi_receiver_staged_patch_request_uri = make_schema_uri(tag, _XPLATSTR("v1.0-receiver-stage-schema.json"));
@@ -134,6 +134,7 @@ namespace nmos
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_audio_raw.json")), make_schema(v1_3::flow_audio_raw) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_audio_coded.json")), make_schema(v1_3::flow_audio_coded) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_data.json")), make_schema(v1_3::flow_data) },
+                { make_schema_uri(v1_3::tag, _XPLATSTR("flow_json_data.json")), make_schema(v1_3::flow_json_data) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_sdianc_data.json")), make_schema(v1_3::flow_sdianc_data) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_mux.json")), make_schema(v1_3::flow_mux) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("flow_audio.json")), make_schema(v1_3::flow_audio) },
@@ -151,6 +152,7 @@ namespace nmos
                 { make_schema_uri(v1_3::tag, _XPLATSTR("source_generic.json")), make_schema(v1_3::source_generic) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("source_audio.json")), make_schema(v1_3::source_audio) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("source_core.json")), make_schema(v1_3::source_core) },
+                { make_schema_uri(v1_3::tag, _XPLATSTR("source_data.json")), make_schema(v1_3::source_data) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("queryapi-subscriptions-post-request.json")), make_schema(v1_3::queryapi_subscriptions_post_request) },
                 { make_schema_uri(v1_3::tag, _XPLATSTR("nodeapi-receiver-target.json")), make_schema(v1_3::nodeapi_receiver_target) },
                 // v1.2
@@ -237,6 +239,7 @@ namespace nmos
                 // v1.1
                 { make_schema_uri(v1_1::tag, _XPLATSTR("sender-stage-schema.json")), make_schema(v1_1::sender_stage_schema) },
                 { make_schema_uri(v1_1::tag, _XPLATSTR("receiver-stage-schema.json")), make_schema(v1_1::receiver_stage_schema) },
+                { make_schema_uri(v1_1::tag, _XPLATSTR("receiver-transport-file.json")), make_schema(v1_1::receiver_transport_file) },
                 { make_schema_uri(v1_1::tag, _XPLATSTR("activation-schema.json")), make_schema(v1_1::activation_schema) },
                 { make_schema_uri(v1_1::tag, _XPLATSTR("sender_transport_params_rtp.json")), make_schema(v1_1::sender_transport_params_rtp) },
                 { make_schema_uri(v1_1::tag, _XPLATSTR("sender_transport_params_dash.json")), make_schema(v1_1::sender_transport_params_dash) },

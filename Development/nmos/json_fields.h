@@ -122,6 +122,8 @@ namespace nmos
         const web::json::field_as_value_or activation_time{ U("activation_time"), {} }; // string or null
         const web::json::field_as_value_or transport_file{ U("transport_file"), {} }; // object
         const web::json::field_as_value transport_params{ U("transport_params") }; // array
+
+        // for urn:x-nmos:transport:rtp
         const web::json::field_as_value_or multicast_ip{ U("multicast_ip"), {} }; // string or null
         const web::json::field_as_value_or interface_ip{ U("interface_ip"), {} }; // string or null
         const web::json::field_as_value_or source_ip{ U("source_ip"), {} }; // string or null
@@ -138,7 +140,18 @@ namespace nmos
         const web::json::field_as_value_or rtcp_destination_port{ U("rtcp_destination_port"), {} }; // string or integer
         const web::json::field_as_value_or rtcp_source_port{ U("rtcp_source_port"), {} }; // string or integer
         const web::json::field_as_value_or fec_mode{ U("fec_mode"), {} }; // string
+        // for urn:x-nmos:transport:websocket
         const web::json::field_as_value_or connection_uri{ U("connection_uri"), {} }; // string or null
+        const web::json::field_as_value_or connection_authorization{ U("connection_authorization"), {} }; // string or bool
+        // for urn:x-nmos:transport:mqtt
+        const web::json::field_as_value_or source_host{ U("source_host"), {} }; // string or null
+        //const web::json::field_as_value_or source_port{ U("source_port"), {} }; // string or integer
+        const web::json::field_as_value_or destination_host{ U("destination_host"), {} }; // string or null
+        //const web::json::field_as_value_or destination_port{ U("destination_port"), {} }; // string or integer
+        const web::json::field_as_value_or broker_protocol{ U("broker_protocol"), {} }; // string
+        const web::json::field_as_value_or broker_authorization{ U("broker_authorization"), {} }; // string or bool
+        const web::json::field_as_value_or broker_topic{ U("broker_topic"), {} }; // string or null
+        const web::json::field_as_value_or connection_status_broker_topic{ U("connection_status_broker_topic"), {} }; // string or null
 
         // IS-07 Event & Tally
 

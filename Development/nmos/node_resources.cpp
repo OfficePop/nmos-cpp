@@ -8,13 +8,13 @@
 #include "nmos/connection_resources.h" // for nmos::make_connection_api_transportfile
 #include "nmos/components.h"
 #include "nmos/device_type.h"
+#include "nmos/event_type.h"
 #include "nmos/format.h"
 #include "nmos/interlace_mode.h"
 #include "nmos/is04_versions.h"
 #include "nmos/is05_versions.h"
 #include "nmos/is07_versions.h"
 #include "nmos/media_type.h"
-#include "nmos/node_resource.h" // just for nmos::make_node for nmos::experimental::insert_node_resources
 #include "nmos/resource.h"
 #include "nmos/transfer_characteristic.h"
 #include "nmos/transport.h"
@@ -125,14 +125,29 @@ namespace nmos
         return resource;
     }
 
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/source_generic.json
     nmos::resource make_video_source(const nmos::id& id, const nmos::id& device_id, const nmos::rational& grain_rate, const nmos::settings& settings)
     {
         return make_generic_source(id, device_id, grain_rate, nmos::formats::video, settings);
     }
 
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/source_generic.json
     nmos::resource make_data_source(const nmos::id& id, const nmos::id& device_id, const nmos::rational& grain_rate, const nmos::settings& settings)
     {
         return make_generic_source(id, device_id, grain_rate, nmos::formats::data, settings);
+    }
+
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.3-dev/APIs/schemas/source_data.json
+    nmos::resource make_data_source(const nmos::id& id, const nmos::id& device_id, const nmos::rational& grain_rate, const nmos::event_type& event_type, const nmos::settings& settings)
+    {
+        using web::json::value;
+
+        auto resource = make_data_source(id, device_id, grain_rate, settings);
+        auto& data = resource.data;
+
+        data[U("event_type")] = value::string(event_type.name);
+
+        return resource;
     }
 
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/source_audio.json
@@ -209,6 +224,20 @@ namespace nmos
         return make_raw_video_flow(id, source_id, device_id, {}, 1920, 1080, nmos::interlace_modes::interlaced_bff, nmos::colorspaces::BT709, nmos::transfer_characteristics::SDR, YCbCr422, 10, settings);
     }
 
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/flow_video_coded.json
+    // (media_type must *not* be nmos::media_types::video_raw; cf. nmos::make_raw_video_flow)
+    nmos::resource make_coded_video_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::rational& grain_rate, unsigned int frame_width, unsigned int frame_height, const nmos::interlace_mode& interlace_mode, const nmos::colorspace& colorspace, const nmos::transfer_characteristic& transfer_characteristic, const nmos::media_type& media_type, const nmos::settings& settings)
+    {
+        using web::json::value;
+
+        auto resource = make_video_flow(id, source_id, device_id, grain_rate, frame_width, frame_height, interlace_mode, colorspace, transfer_characteristic, settings);
+        auto& data = resource.data;
+
+        data[U("media_type")] = value::string(media_type.name);
+
+        return resource;
+    }
+
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/flow_audio.json
     nmos::resource make_audio_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::rational& sample_rate, const nmos::settings& settings)
     {
@@ -242,6 +271,20 @@ namespace nmos
         return make_raw_audio_flow(id, source_id, device_id, 48000, 24, settings);
     }
 
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/flow_audio_coded.json
+    // (media_type must *not* be nmos::media_types::audio_L(bit_depth); cf. nmos::make_raw_audio_flow)
+    nmos::resource make_coded_audio_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::rational& sample_rate, const nmos::media_type& media_type, const nmos::settings& settings)
+    {
+        using web::json::value;
+
+        auto resource = make_audio_flow(id, source_id, device_id, sample_rate, settings);
+        auto& data = resource.data;
+
+        data[U("media_type")] = value::string(media_type.name);
+
+        return resource;
+    }
+
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/flow_sdianc_data.json
     nmos::resource make_sdianc_data_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::settings& settings)
     {
@@ -272,6 +315,25 @@ namespace nmos
         return resource;
     }
 
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/flow_mux.json
+    nmos::resource make_mux_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::media_type& media_type, const nmos::settings& settings)
+    {
+        using web::json::value;
+
+        auto resource = make_flow(id, source_id, device_id, {}, settings);
+        auto& data = resource.data;
+
+        data[U("format")] = value::string(nmos::formats::mux.name);
+        data[U("media_type")] = value::string(media_type.name);
+
+        return resource;
+    }
+
+    nmos::resource make_mux_flow(const nmos::id& id, const nmos::id& source_id, const nmos::id& device_id, const nmos::settings& settings)
+    {
+        return make_mux_flow(id, source_id, device_id, nmos::media_types::video_SMPTE2022_6, settings);
+    }
+
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/sender.json
     nmos::resource make_sender(const nmos::id& id, const nmos::id& flow_id, const nmos::transport& transport, const nmos::id& device_id, const utility::string_t& manifest_href, const std::vector<utility::string_t>& interfaces, const nmos::settings& settings)
     {
@@ -284,7 +346,9 @@ namespace nmos
         data[U("flow_id")] = !flow_id.empty() ? value::string(flow_id) : value::null();
         data[U("transport")] = value::string(transport.name);
         data[U("device_id")] = value::string(device_id);
-        data[U("manifest_href")] = value::string(manifest_href);
+        // "Permit a Sender's 'manifest_href' to be null when the transport type does not require a transport file" from IS-04 v1.3
+        // See https://github.com/AMWA-TV/nmos-discovery-registration/pull/97
+        data[U("manifest_href")] = !manifest_href.empty() ? value::string(manifest_href) : value::null();
 
         auto& interface_bindings = data[U("interface_bindings")] = value::array();
         for (const auto& interface : interfaces)
@@ -344,7 +408,7 @@ namespace nmos
     }
 
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/receiver_audio.json
-    nmos::resource make_audio_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, unsigned int bit_depth, const nmos::settings& settings)
+    nmos::resource make_audio_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, const std::vector<unsigned int>& bit_depths, const nmos::settings& settings)
     {
         using web::json::value;
 
@@ -352,9 +416,17 @@ namespace nmos
         auto& data = resource.data;
 
         data[U("format")] = value::string(nmos::formats::audio.name);
-        data[U("caps")][U("media_types")][0] = value::string(nmos::media_types::audio_L(bit_depth).name);
+        for (const auto& bit_depth : bit_depths)
+        {
+            web::json::push_back(data[U("caps")][U("media_types")], value::string(nmos::media_types::audio_L(bit_depth).name));
+        }
 
         return resource;
+    }
+
+    nmos::resource make_audio_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, unsigned int bit_depth, const nmos::settings& settings)
+    {
+        return make_audio_receiver(id, device_id, transport, interfaces, { 1, bit_depth }, settings);
     }
 
     // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/receiver_data.json
@@ -371,27 +443,37 @@ namespace nmos
         return resource;
     }
 
-    namespace experimental
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/receiver_data.json
+    // (media_type must *not* be nmos::media_types::video_smpte291; cf. nmos::make_sdianc_data_receiver)
+    nmos::resource make_data_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, const nmos::media_type& media_type, const nmos::settings& settings)
     {
-        // insert a node resource, and sub-resources, according to the settings; return an iterator to the inserted node resource,
-        // or to a resource that prevented the insertion, and a bool denoting whether the insertion took place
-        std::pair<resources::iterator, bool> insert_node_resources(nmos::resources& node_resources, const nmos::settings& settings)
-        {
-            const auto& seed_id = nmos::experimental::fields::seed_id(settings);
-            auto node_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/self"));
-            auto device_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/device/0"));
-            auto source_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/source/0"));
-            auto flow_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/flow/0"));
-            auto sender_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/sender/0"));
-            auto receiver_id = nmos::make_repeatable_id(seed_id, U("/x-nmos/node/receiver/0"));
+        using web::json::value;
 
-            auto result = insert_resource(node_resources, make_node(node_id, settings));
-            insert_resource(node_resources, make_device(device_id, node_id, { sender_id }, { receiver_id }, settings));
-            insert_resource(node_resources, make_video_source(source_id, device_id, { 25, 1 }, settings));
-            insert_resource(node_resources, make_raw_video_flow(flow_id, source_id, device_id, settings));
-            insert_resource(node_resources, make_sender(sender_id, flow_id, device_id, {}, settings));
-            insert_resource(node_resources, make_video_receiver(receiver_id, device_id, nmos::transports::rtp_mcast, {}, settings));
-            return result;
-        }
+        auto resource = make_receiver(id, device_id, transport, interfaces, settings);
+        auto& data = resource.data;
+
+        data[U("format")] = value::string(nmos::formats::data.name);
+        data[U("caps")][U("media_types")][0] = value::string(media_type.name);
+
+        return resource;
+    }
+
+    // See https://github.com/AMWA-TV/nmos-discovery-registration/blob/v1.2/APIs/schemas/receiver_mux.json
+    nmos::resource make_mux_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, const nmos::media_type& media_type, const nmos::settings& settings)
+    {
+        using web::json::value;
+
+        auto resource = make_receiver(id, device_id, transport, interfaces, settings);
+        auto& data = resource.data;
+
+        data[U("format")] = value::string(nmos::formats::data.name);
+        data[U("caps")][U("media_types")][0] = value::string(media_type.name);
+
+        return resource;
+    }
+
+    nmos::resource make_mux_receiver(const nmos::id& id, const nmos::id& device_id, const nmos::transport& transport, const std::vector<utility::string_t>& interfaces, const nmos::settings& settings)
+    {
+        return make_mux_receiver(id, device_id, transport, interfaces, nmos::media_types::video_SMPTE2022_6, settings);
     }
 }

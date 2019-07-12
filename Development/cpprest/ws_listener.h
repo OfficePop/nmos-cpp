@@ -17,6 +17,7 @@
 #endif
 #endif
 
+#include "cpprest/http_msg.h"
 #include "cpprest/logging_utils.h" // for web::logging::experimental::log_handler
 #include "cpprest/ws_msg.h"
 #include "cpprest/ws_client.h" // only for websocket_close_status and websocket_exception which ought to be in cpprest/ws_msg.h
@@ -26,7 +27,7 @@ namespace web
 {
     namespace websockets
     {
-        // ultimately, it would be nice to switch the namespaces of the definitions and the using-declarations... 
+        // ultimately, it would be nice to switch the namespaces of the definitions and the using-declarations...
         using web::websockets::client::websocket_close_status;
         using web::websockets::client::websocket_exception;
         using web::websockets::client::websocket_incoming_message;
@@ -62,15 +63,25 @@ namespace web
                 inline bool operator> (const connection_id& lhs, const connection_id& rhs) { return  (rhs < lhs); }
                 inline bool operator<=(const connection_id& lhs, const connection_id& rhs) { return !(rhs < lhs); }
 
-                // a validate handler gets the resource path and returns a flag indicating whether to accept the connection or not
+                // a validate handler gets the client's opening handshake request, and returns a flag indicating whether to accept the connection or not
+                // the handler may call web::http::http_request::reply to specify details of the response if validation failed
                 // the default validate handler accepts all connections
-                typedef std::function<bool(const utility::string_t&)> validate_handler;
-                // an open handler gets the resource path and the connection id
-                typedef std::function<void(const utility::string_t&, const connection_id&)> open_handler;
-                // a close handler gets the resource path, the connection id, the close code and the close reason
-                typedef std::function<void(const utility::string_t&, const connection_id&, websocket_close_status, const utility::string_t& close_reason)> close_handler;
-                // a message handler gets the resource path, the connection id and the incoming message
-                typedef std::function<void(const utility::string_t&, const connection_id&, const websocket_incoming_message&)> message_handler;
+                typedef std::function<bool(web::http::http_request)> validate_handler;
+                // an open handler gets the WebSocket URI and the connection id
+                typedef std::function<void(const web::uri&, const connection_id&)> open_handler;
+                // a close handler gets the WebSocket URI, the connection id, the close code and the close reason
+                typedef std::function<void(const web::uri&, const connection_id&, websocket_close_status, const utility::string_t& close_reason)> close_handler;
+                // a message handler gets the WebSocket URI, the connection id and the incoming message
+                typedef std::function<void(const web::uri&, const connection_id&, const websocket_incoming_message&)> message_handler;
+
+                // a convenience type to simplify passing around all the necessary handlers for a websocket_listener
+                struct websocket_listener_handlers
+                {
+                    web::websockets::experimental::listener::validate_handler validate_handler;
+                    web::websockets::experimental::listener::open_handler open_handler;
+                    web::websockets::experimental::listener::close_handler close_handler;
+                    web::websockets::experimental::listener::message_handler message_handler;
+                };
 
 #if !defined(_WIN32) || !defined(__cplusplus_winrt)
                 // ultimately, this would seem to belong in web, in order to also be adopted by web::http, but until that time...
@@ -133,6 +144,15 @@ namespace web
                     void set_open_handler(open_handler handler);
                     void set_close_handler(close_handler handler);
                     void set_message_handler(message_handler handler);
+
+                    // convenience function - could be non-member
+                    void set_handlers(websocket_listener_handlers handlers)
+                    {
+                        set_validate_handler(std::move(handlers.validate_handler));
+                        set_open_handler(std::move(handlers.open_handler));
+                        set_close_handler(std::move(handlers.close_handler));
+                        set_message_handler(std::move(handlers.message_handler));
+                    }
 
                     pplx::task<void> open();
 

@@ -17,6 +17,7 @@ namespace nmos
             extern const char* sender_transport_params_mqtt;
             extern const char* sender_transport_params_ext;
             extern const char* receiver_stage_schema;
+            extern const char* receiver_transport_file;
             extern const char* receiver_transport_params_rtp;
             extern const char* receiver_transport_params_dash;
             extern const char* receiver_transport_params_websocket;
@@ -24,7 +25,7 @@ namespace nmos
             extern const char* receiver_transport_params_ext;
         }
 
-        namespace v1_0_1
+        namespace v1_0_2
         {
             extern const char* v1_0_activation_schema;
             extern const char* v1_0_sender_stage_schema;
